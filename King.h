@@ -7,6 +7,8 @@
 #include "ChessPiece.h"
 #include "Queen.h"
 
+// comment
+
 namespace Chess{
 namespace ChessComponents{
 namespace ChessPieces{
