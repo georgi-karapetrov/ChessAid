@@ -57,5 +57,5 @@ vector< Position > Knight::allowedMovements()
 
 ChessPieceType Knight::pieceType()
 {
-    return knight;
+    return tKnight;
 }

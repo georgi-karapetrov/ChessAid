@@ -140,6 +140,10 @@ void GameEngine::parseInstructions( const string& instruction )
             cout << "This can't go there!\n";
             pressEnterToContinue();
             break;
+        case Check:
+            cout << "You are in check!\nYour King is crying for help!\n";
+            pressEnterToContinue();
+            break;
         case Success:
             this->nextPlayersTurn();
             break;

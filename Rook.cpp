@@ -73,5 +73,5 @@ vector< Position > Rook::allowedMovements()
 
 ChessPieceType Rook::pieceType()
 {
-    return rook;
+    return tRook;
 }

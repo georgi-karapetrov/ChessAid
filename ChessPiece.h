@@ -31,12 +31,12 @@ using namespace Chess::ChessComponents::PlayField;
 
 enum ChessPieceType
 {
-    pawn,
-    rook,
-    knight,
-    bishop,
-    queen,
-    king
+    tPawn,
+    tRook,
+    tKnight,
+    tBishop,
+    tQueen,
+    tKing
 };
 
 inline Colour nextColour( const Colour& colour )

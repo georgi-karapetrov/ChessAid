@@ -66,5 +66,5 @@ vector<Position> Bishop::allowedMovements()
 
 ChessPieceType Bishop::pieceType()
 {
-    return bishop;
+    return tBishop;
 }

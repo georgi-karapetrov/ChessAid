@@ -2,7 +2,6 @@
 #include "Board.h"
 
 using namespace std;
-//using Chess::ChessPieceType;
 using namespace Chess::ChessComponents::ChessPieces;
 
 King::King( const Position& position, const Colour& colour, Board* board )
@@ -75,5 +74,5 @@ vector< Position > King::allowedMovements()
 
 ChessPieceType King::pieceType()
 {
-    return king;
+    return tKing;
 }

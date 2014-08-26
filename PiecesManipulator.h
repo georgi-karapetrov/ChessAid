@@ -28,6 +28,7 @@ enum Error
     EmptyPosition,
     Success,
     InvalidDestination,
+    Check,
     ReachedEnd
 };
 
@@ -62,10 +63,12 @@ public:
 
     Error makeAMove( const Position& from, const Position& to , Colour colour );
 
-    bool isCastlingAllowed( ChessPiece* const kingPiece, ChessPiece* const rookPiece, const CastlingType& type );
+    bool isCastlingAllowed( ChessPiece* const king, ChessPiece* const rook, const CastlingType& type );
     bool castling( const Colour& colour, const CastlingType& type );
 
     void destroy();
+
+    bool kingInCheck( const Colour& colour );
 
 private:
     stack< Movement* > m_moves;

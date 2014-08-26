@@ -83,5 +83,5 @@ bool Pawn::canAddToMovements( const Position& position ) const
 
 ChessPieceType Pawn::pieceType()
 {
-    return pawn;
+    return tPawn;
 }

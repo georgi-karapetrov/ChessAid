@@ -57,5 +57,5 @@ void Queen::setPosition( const Position& position )
 
 ChessPieceType Queen::pieceType()
 {
-    return queen;
+    return tQueen;
 }

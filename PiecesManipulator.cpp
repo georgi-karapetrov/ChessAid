@@ -41,11 +41,16 @@ Error PiecesManipulator::makeAMove( const Position& from, const Position& to, Co
         return WrongColour;
     }
 
+    if ( this->kingInCheck( colour ) && m_board->pieceAt( from )->pieceType() != tKing )
+    {
+        return Check;
+    }
+
     //if the figure attempts to move in its allowed movements
     vector< Position > tmp = m_board->pieceAt( from )->allowedMovements();
     unsigned int i = 0;
     bool flag = false;
-    while( i < tmp.size() && !flag )
+    while ( i < tmp.size() && !flag )
     {
         if ( tmp[ i ] == to )
         {
@@ -80,11 +85,11 @@ bool PiecesManipulator::castling( const Colour& colour, const CastlingType& type
     int castlingOffsetKing = 0;
     int castlingOffsetRook = 0;
 
-    ChessPiece* kingPiece = colour == white ? m_board->pieceAt( WHITE_KING_POSITION ) : m_board->pieceAt( BLACK_KING_POSITION );
+    ChessPiece* king = colour == white ? m_board->pieceAt( WHITE_KING_POSITION ) : m_board->pieceAt( BLACK_KING_POSITION );
 
     Position rookPosition = colour == white ? type == Kingside ? WHITE_K_ROOK_POSITION : WHITE_Q_ROOK_POSITION
                                             : type == Kingside ? BLACK_K_ROOK_POSITION : BLACK_Q_ROOK_POSITION;
-    ChessPiece* rookPiece = m_board->pieceAt( rookPosition );
+    ChessPiece* rook = m_board->pieceAt( rookPosition );
 
     if ( !m_board->isPiece( WHITE_KING_POSITION )
          || !m_board->isPiece( rookPosition ) )
@@ -92,12 +97,12 @@ bool PiecesManipulator::castling( const Colour& colour, const CastlingType& type
         return false;
     }
 
-    if ( kingPiece->pieceType() != king || rookPiece->pieceType() != rook )
+    if ( king->pieceType() != tKing || rook->pieceType() != tRook )
     {
         return false;
     }
 
-    if ( ! isCastlingAllowed( kingPiece, rookPiece, type ) )
+    if ( ! isCastlingAllowed( king, rook, type ) )
     {
         return false;
     }
@@ -117,19 +122,19 @@ bool PiecesManipulator::castling( const Colour& colour, const CastlingType& type
 
     //faking movements here
     //resulting in crashing undo
-    Movement* kingMovement = new SimpleMovement( kingPiece->position(),
+    Movement* kingMovement = new SimpleMovement( king->position(),
                                                  Position( castlingOffsetKing,
-                                                           kingPiece->position().y() ), m_board );
-    Movement* rookMovement = new SimpleMovement( rookPiece->position(),
+                                                           king->position().y() ), m_board );
+    Movement* rookMovement = new SimpleMovement( rook->position(),
                                                  Position( castlingOffsetRook,
-                                                         rookPiece->position().y() ), m_board );
+                                                         rook->position().y() ), m_board );
     vector < Movement* > simpleMovements;
 
     simpleMovements.push_back( rookMovement );
     simpleMovements.push_back( kingMovement );
 
-    m_board->movePiece( kingPiece->position(), Position( castlingOffsetKing, kingPiece->position().y() ) );
-    m_board->movePiece( rookPiece->position(), Position( castlingOffsetRook, rookPiece->position().y() ) );
+    m_board->movePiece( king->position(), Position( castlingOffsetKing, king->position().y() ) );
+    m_board->movePiece( rook->position(), Position( castlingOffsetRook, rook->position().y() ) );
 
 
     Movement* castlingMovement = new ComplexMovement( m_board, simpleMovements );
@@ -139,22 +144,22 @@ bool PiecesManipulator::castling( const Colour& colour, const CastlingType& type
     return true;
 }
 
-bool PiecesManipulator::isCastlingAllowed(ChessPiece* const kingPiece, ChessPiece* const rookPiece, const CastlingType& type )
+bool PiecesManipulator::isCastlingAllowed( ChessPiece* const king, ChessPiece* const rook, const CastlingType& type )
 {
-    if ( m_board->passedMoves( kingPiece ) > 0
-         || m_board->passedMoves( rookPiece ) > 0 )
+    if ( m_board->passedMoves( king ) > 0
+         || m_board->passedMoves( rook ) > 0 )
     {
         return false;
     }
 
-    Colour colour = kingPiece->colour();
+    Colour colour = king->colour();
     const vector< ChessPiece* >& enemyPieces = colour == white ? m_board->blackPieces() : m_board->whitePieces();
 
     if ( type == Kingside )
     {
-        for ( int i = kingPiece->position().x() + 1; i <= KSCASTLING_KING_X; ++ i )
+        for ( int i = king->position().x() + 1; i <= KSCASTLING_KING_X; ++ i )
         {
-            Position position ( i, kingPiece->position().y() );
+            Position position ( i, king->position().y() );
             bool obstacle = m_board->isObstacle( position, colour );
             bool los = m_board->inLoS( position, enemyPieces );
             if ( obstacle || los )
@@ -165,9 +170,9 @@ bool PiecesManipulator::isCastlingAllowed(ChessPiece* const kingPiece, ChessPiec
     }
     else // if type == Queenside
     {
-        for ( int i = kingPiece->position().x() - 1; i >= QSCASTLING_KING_X; -- i )
+        for ( int i = king->position().x() - 1; i >= QSCASTLING_KING_X; -- i )
         {
-            Position position ( i, kingPiece->position().y() );
+            Position position ( i, king->position().y() );
             if ( m_board->isObstacle( position, colour )
                  || m_board->inLoS( position, enemyPieces ) )
             {
@@ -177,4 +182,23 @@ bool PiecesManipulator::isCastlingAllowed(ChessPiece* const kingPiece, ChessPiec
     }
 
     return true;
+}
+
+bool PiecesManipulator::kingInCheck( const Colour& colour )
+{
+    const vector< ChessPiece* >& tempPieces = colour == white ? m_board->whitePieces() : m_board->blackPieces();
+    const vector< ChessPiece* >& enemyPieces = colour == white ? m_board->blackPieces() : m_board->whitePieces();
+
+    bool inCheck = false;
+    for ( auto iter = tempPieces.begin(); iter != tempPieces.end(); ++iter )
+    {
+        if ( ( *iter )->pieceType() == tKing )
+        {
+            ChessPiece* falseKing = *iter;
+            inCheck = m_board->inLoS( falseKing->position(), enemyPieces );
+            break;
+        }
+    }
+
+    return inCheck;
 }
