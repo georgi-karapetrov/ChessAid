@@ -11,6 +11,8 @@
 
 #include "Player.h"
 
+// Are opravi si bilda we :D
+
 enum People
 {
     Crazy,
